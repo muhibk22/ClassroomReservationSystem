@@ -1,5 +1,6 @@
 using ClassroomReservationSystem.Components;
 using ClassroomReservationSystem.Components.Services;
+using ClassroomReservationSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddScoped<UserState>();
 builder.Services.AddScoped<CourseService>();
 builder.Services.AddScoped<AssignedCourseService>();
 builder.Services.AddScoped<ClassroomService>();
+builder.Services.AddScoped<ScheduledClassService>();
 
 
 builder.Services.AddRazorComponents()
