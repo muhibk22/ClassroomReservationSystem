@@ -1,0 +1,130 @@
+﻿@page "/assigned-courses"
+@using ClassroomReservationSystem.Components.Services;
+@using ClassroomReservationSystem.Components.Models;
+@using System.ComponentModel.DataAnnotations;
+@inject AssignedCourseService AssignedCourseService
+@inject UserState UserState
+@rendermode InteractiveServer
+
+<h3>All Assigned Courses</h3>
+
+@if (!UserState.IsAdmin)
+{
+    <p class="text-danger">Access Denied. Only admins can view this page.</p>
+}
+else if (courses == null)
+{
+    <p>Loading...</p>
+}
+else if (courses.Count == 0)
+{
+    <p>No courses found.</p>
+}
+else
+{
+    @* AssignedCourseId = reader.GetInt32(0),
+                    InstructorId = reader.GetInt32(1),
+                    CourseId = reader.GetInt32(2),
+                    Instructor = new User
+                    {
+                        UserId = reader.GetInt32(1),
+                        FullName = reader.GetString(3),
+                        UserName = reader.GetString(4),
+                        Role = (UserRole)reader.GetInt32(5)
+                    },
+                    Course = new Course
+                    {
+                        CourseId = reader.GetInt32(2),
+                        CourseCode = reader.GetString(6),
+                        Title = reader.GetString(7),
+                        PreReqCode = reader.IsDBNull(8) ? null : reader.GetString(8)
+                    }*@
+    
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Instructor Name</th>
+                <th>Course Name</th>
+                <th>Course Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in courses)
+            {
+                <tr>
+                    <td>@c.AssignedCourseId</td>
+                    <td>@c.Instructor.FullName</td>
+                    <td>@c.Course.Title</td>
+                    <td>@c.Course.CourseCode</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c.AssignedCourseId, c.CourseId)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showConfirm)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CloseConfirm" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to unassign course <strong>@assignmentToDelete</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseConfirm">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteCourseAsync">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<AssignedCourse>? courses;
+    private bool showConfirm = false;
+    private int assignmentToDelete;
+    private int courseIdToDelete;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourses();
+    }
+
+    private async Task LoadCourses()
+    {
+        courses = await AssignedCourseService.GetAllAssignedCoursesAsync();
+    }
+
+    private void ConfirmDelete(int id, int courseId)
+    {
+        assignmentToDelete = id;
+        courseIdToDelete = courseId;
+        showConfirm = true;
+    }
+
+    private void CloseConfirm()
+    {
+        showConfirm = false;
+        assignmentToDelete = 0;
+        courseIdToDelete = 0;
+    }
+
+    private async Task DeleteCourseAsync()
+    {
+        if (await AssignedCourseService.DeleteAssignedCourseAsync(assignmentToDelete, courseIdToDelete))
+        {
+            courses?.RemoveAll(c => c.CourseId == courseIdToDelete);
+        }
+        CloseConfirm();
+    }
+}

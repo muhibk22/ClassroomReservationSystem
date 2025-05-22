@@ -1,0 +1,111 @@
+﻿@page "/courses"
+@using ClassroomReservationSystem.Components.Services;
+@using ClassroomReservationSystem.Components.Models;
+@using System.ComponentModel.DataAnnotations;
+@inject CourseService CourseService
+@inject UserState UserState
+@rendermode InteractiveServer
+
+<h3>All Courses</h3>
+
+@if (!UserState.IsAdmin)
+{
+    <p class="text-danger">Access Denied. Only admins can view this page.</p>
+}
+else if (courses == null)
+{
+    <p>Loading...</p>
+}
+else if (courses.Count == 0)
+{
+    <p>No courses found.</p>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Course Code</th>
+                <th>Title</th>
+                <th>Pre-requisite</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in courses)
+            {
+                <tr>
+                    <td>@c.CourseCode</td>
+                    <td>@c.Title</td>
+                    <td>@(string.IsNullOrWhiteSpace(c.PreReqCode) ? "None" : c.PreReqCode)</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(c.CourseId, c.CourseCode)">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showConfirm)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CloseConfirm" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete course <strong>@courseCodeToDelete</strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseConfirm">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteCourseAsync">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<Course>? courses;
+    private bool showConfirm = false;
+    private int courseIdToDelete;
+    private string courseCodeToDelete = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCourses();
+    }
+
+    private async Task LoadCourses()
+    {
+        courses = await CourseService.GetAllCoursesAsync();
+    }
+
+    private void ConfirmDelete(int courseId, string courseCode)
+    {
+        courseIdToDelete = courseId;
+        courseCodeToDelete = courseCode;
+        showConfirm = true;
+    }
+
+    private void CloseConfirm()
+    {
+        showConfirm = false;
+        courseIdToDelete = 0;
+        courseCodeToDelete = string.Empty;
+    }
+
+    private async Task DeleteCourseAsync()
+    {
+        if (await CourseService.DeleteCourseAsync(courseIdToDelete))
+        {
+            courses?.RemoveAll(c => c.CourseId == courseIdToDelete);
+        }
+        CloseConfirm();
+    }
+}

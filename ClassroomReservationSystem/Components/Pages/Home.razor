@@ -1,0 +1,72 @@
+﻿@page "/"
+@using ClassroomReservationSystem.Components.Services
+@using System.ComponentModel.DataAnnotations;
+@inject UserService UserService
+@inject UserState UserState
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+<h3>Login</h3>
+
+<EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="login">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-2">
+        <label>Username:</label>
+        <InputText class="form-control" @bind-Value="loginModel.UserName" />
+        <ValidationMessage For="@(()=>loginModel.UserName)"/>
+    </div>
+
+    <div class="mb-2">
+        <label>Password:</label>
+        <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
+        <ValidationMessage For="@(() => loginModel.Password)" />
+
+    </div>
+
+    <button class="btn btn-primary" type="submit">Login</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(message))
+{
+    <div class="mt-2 alert @(UserState.IsLoggedIn ? "alert-success" : "alert-danger")">
+        @message
+    </div>
+}
+
+@code {
+    private User loginModel = new();
+    private string message = string.Empty;
+
+
+    private async Task HandleLogin()
+    {
+        var user = await UserService.AuthenticateAsync(loginModel.UserName, loginModel.Password);
+        if (user != null)
+        {
+            UserState.SetUser(user);
+            if (UserState.IsAdmin)
+            {
+                Navigation.NavigateTo("/register-faculty");
+                message = $"Welcome, {user.FullName}!";
+                
+            }
+            // else
+            // {
+            //     message = " in progress";
+            // }
+            Console.WriteLine(UserState.CurrentUser.FullName);
+    
+           
+
+            
+        }
+        else
+        {
+            message = "Invalid username or password.";
+        }
+
+    }
+
+    
+}

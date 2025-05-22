@@ -1,0 +1,98 @@
+﻿@page "/assign-course"
+@using ClassroomReservationSystem.Components.Services;
+@using ClassroomReservationSystem.Components.Models;
+@using System.ComponentModel.DataAnnotations;
+@inject AssignedCourseService AssignedCourseService
+@inject UserService UserService
+@inject CourseService CourseService
+@inject UserState UserState
+@rendermode InteractiveServer
+
+<h3>Assign Course to Faculty</h3>
+
+@if (!UserState.IsAdmin)
+{
+    <p class="text-danger">Access Denied. Only admins can assign courses.</p>
+}
+else if (instructors == null || courses == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <EditForm Model="assignmentModel" OnValidSubmit="HandleAssign" formname="AssignCourseForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label>Instructor:</label>
+            <InputSelect class="form-control" @bind-Value="assignmentModel.InstructorId">
+                <option value="">-- Select Faculty --</option>
+                @foreach (var instructor in instructors)
+                {
+                    <option value="@instructor.UserId">@instructor.FullName (@instructor.UserName)</option>
+                }
+            </InputSelect>
+        </div>
+
+        <div class="mb-3">
+            <label>Course:</label>
+            <InputSelect class="form-control" @bind-Value="assignmentModel.CourseId">
+                <option value="">-- Select Course --</option>
+                @foreach (var course in courses)
+                {
+                    <option value="@course.CourseId">@course.CourseCode - @course.Title</option>
+                }
+            </InputSelect>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Assign</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="mt-3 alert @(isSuccess ? "alert-success" : "alert-danger")">
+            @message
+        </div>
+    }
+}
+
+@code {
+    private List<User>? instructors;
+    private List<Course>? courses;
+    private AssignedCourse assignmentModel = new();
+    private string message = string.Empty;
+    private bool isSuccess;
+
+    protected override async Task OnInitializedAsync()
+    {
+        instructors = await UserService.GetAllFacultyAsync();
+        courses = await CourseService.GetAllCoursesAsync();
+    }
+
+    private async Task HandleAssign()
+    {
+        if (assignmentModel.InstructorId == 0 || assignmentModel.CourseId == 0)
+        {
+            message = "Please select both instructor and course.";
+            isSuccess = false;
+            return;
+        }
+
+        bool alreadyAssigned = await AssignedCourseService.IsCourseAlreadyAssignedAsync(
+            assignmentModel.InstructorId, assignmentModel.CourseId);
+
+        if (alreadyAssigned)
+        {
+            message = "This course is already assigned to this instructor.";
+            isSuccess = false;
+            return;
+        }
+
+        bool result = await AssignedCourseService.AssignCourseAsync(
+            assignmentModel.InstructorId, assignmentModel.CourseId);
+
+        message = result ? "Course assigned successfully." : "Assignment failed.";
+        isSuccess = result;
+    }
+}
