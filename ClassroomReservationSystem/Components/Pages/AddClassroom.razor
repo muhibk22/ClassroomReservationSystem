@@ -1,0 +1,136 @@
+﻿@page "/classrooms"
+@using ClassroomReservationSystem.Components.Services;
+@using ClassroomReservationSystem.Components.Models;
+@using System.ComponentModel.DataAnnotations;
+@inject ClassroomService ClassroomService
+@rendermode InteractiveServer
+
+
+<h2 class="text-xl font-bold mb-4">Classroom Management</h2>
+
+<EditForm Model="newClassroom" OnValidSubmit="AddClassroomAsync" formname="add-classroom-form">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <InputText @bind-Value="newClassroom.RoomNumber" class="input" placeholder="Room Number" />
+        <InputNumber @bind-Value="newClassroom.Capacity" class="input" placeholder="Capacity" />
+        <InputText @bind-Value="newClassroom.Department" class="input" placeholder="Department" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Classroom</button>
+</EditForm>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="mt-2 text-sm text-blue-700 bg-blue-100 border border-blue-300 px-3 py-2 rounded">
+        @statusMessage
+    </div>
+}
+
+@if (classrooms is null)
+{
+    <p>Loading...</p>
+}
+else if (classrooms.Count == 0)
+{
+    <p>No classrooms found.</p>
+}
+else
+{
+    <table class="table-auto w-full mt-6 border">
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="px-4 py-2">Room Number</th>
+                <th class="px-4 py-2">Capacity</th>
+                <th class="px-4 py-2">Department</th>
+                <th class="px-4 py-2">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var room in classrooms)
+            {
+                <tr>
+                    <td class="border px-4 py-2">@room.RoomNumber</td>
+                    <td class="border px-4 py-2">@room.Capacity</td>
+                    <td class="border px-4 py-2">@room.Department</td>
+                    <td class="border px-4 py-2">
+                        <button class="btn btn-danger" @onclick="() => ConfirmDelete(room)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (deleteTarget != null)
+{
+    <div class="mt-4 bg-red-50 border border-red-300 p-4 rounded">
+        <p>Are you sure you want to delete <strong>@deleteTarget.RoomNumber</strong>?</p>
+        <button class="btn btn-danger mr-2" @onclick="DeleteConfirmed">Yes, Delete</button>
+        <button class="btn btn-secondary" @onclick="() => deleteTarget = null">Cancel</button>
+    </div>
+}
+
+@code {
+    private List<Classroom>? classrooms;
+    private Classroom newClassroom = new();
+    private Classroom? deleteTarget;
+    private string? statusMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadClassroomsAsync();
+    }
+
+    private async Task LoadClassroomsAsync()
+    {
+        classrooms = await ClassroomService.GetAllClassroomsAsync();
+    }
+
+    private async Task AddClassroomAsync()
+    {
+        statusMessage = string.Empty;
+
+        if (await ClassroomService.ClassroomExistsAsync(newClassroom.RoomNumber))
+        {
+            statusMessage = "Classroom with this Room Number already exists.";
+            return;
+        }
+
+        bool added = await ClassroomService.AddClassroomAsync(newClassroom);
+        if (added)
+        {
+            statusMessage = "Classroom added successfully.";
+            newClassroom = new();
+            await LoadClassroomsAsync();
+        }
+        else
+        {
+            statusMessage = "Failed to add classroom.";
+        }
+    }
+
+    private void ConfirmDelete(Classroom classroom)
+    {
+        deleteTarget = classroom;
+    }
+
+    private async Task DeleteConfirmed()
+    {
+        if (deleteTarget != null)
+        {
+            bool deleted = await ClassroomService.DeleteClassroomAsync(deleteTarget.ClassroomId);
+            if (deleted)
+            {
+                statusMessage = $"Classroom '{deleteTarget.RoomNumber}' deleted.";
+                deleteTarget = null;
+                await LoadClassroomsAsync();
+            }
+            else
+            {
+                statusMessage = "Failed to delete classroom.";
+            }
+        }
+    }
+}
