@@ -34,13 +34,11 @@
 
     <div class="mb-3">
         <label>Classroom</label>
-        <select class="form-select w-full" @bind="scheduledClass.ClassroomId">
+        <select class="form-select w-full" @onchange="OnClassroomChanged">
             <option value="">-- Select a Classroom --</option>
             @foreach (var room in classrooms)
             {
-                <option value="@room.ClassroomId">
-                    @room.RoomNumber (@room.Department)
-                </option>
+                <option value="@room.ClassroomId">@room.RoomNumber (@room.Department)</option>
             }
         </select>
     </div>
@@ -57,7 +55,7 @@
 
     <div class="mb-3">
         <label>Start Time:</label>
-        <select class="form-select" @onchange="OnStartTimeChanged">
+        <select class="form-select" @bind="scheduledClass.StartTime">
         @foreach (var time in TimeOptions)
         {
             if (time.ToString(@"hh\:mm") == "16:00")
@@ -71,7 +69,7 @@
 
     <div class="mb-3">
         <label>End Time:</label>
-        <select class="form-select" @onchange="OnEndTimeChanged">
+        <select class="form-select" @bind="scheduledClass.EndTime">
             @foreach (var time in TimeOptions)
             {
                 if (time.ToString(@"hh\:mm") == "08:00")
@@ -117,15 +115,24 @@
     private List<AssignedCourse> assignedCourses = new();
     private int selectedCourseId;
 
-    private bool IsFormValid =>
-    selectedCourseId > 0 &&
-    scheduledClass.ClassroomId > 0 &&
-    scheduledClass.StartTime != TimeSpan.Zero &&
-    scheduledClass.EndTime != TimeSpan.Zero &&
-    scheduledClass.StartTime < scheduledClass.EndTime;
-
     private string conflictMessage = string.Empty;
     private string message = string.Empty;
+    private int selectedClassroomId; 
+
+    private bool IsFormValid =>
+        selectedCourseId > 0 &&
+        scheduledClass.StartTime != TimeSpan.Zero &&
+        scheduledClass.EndTime != TimeSpan.Zero &&
+        scheduledClass.StartTime < scheduledClass.EndTime;
+
+    private void OnClassroomChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int classroomId))
+        {
+            selectedClassroomId = classroomId;
+            scheduledClass.Classroom = classrooms.FirstOrDefault(c => c.ClassroomId == classroomId)!;
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,50 +140,6 @@
         assignedCourses = await AssignedCourseService.GetAllAssignedCoursesAsync();
         classrooms = await ClassroomService.GetAllClassroomsAsync();
     }
-
-    private void OnStartTimeChanged(ChangeEventArgs e)
-    {
-        if (TimeSpan.TryParse(e.Value?.ToString(), out var selectedTime))
-        {
-            scheduledClass.StartTime = selectedTime;
-
-            if (scheduledClass.EndTime != TimeSpan.Zero && scheduledClass.StartTime >= scheduledClass.EndTime)
-            {
-                message = "Starting time cannot be same as or later than ending time!";
-            }
-            else
-            {
-                message = string.Empty;
-            }
-        }
-        else
-        {
-            message = "Invalid Start Time!";
-        }
-    }
-
-    private void OnEndTimeChanged(ChangeEventArgs e)
-    {
-        if (TimeSpan.TryParse(e.Value?.ToString(), out var selectedTime))
-        {
-            scheduledClass.EndTime = selectedTime;
-
-            if (scheduledClass.StartTime != TimeSpan.Zero && scheduledClass.StartTime >= scheduledClass.EndTime)
-            {
-                message = "Starting time cannot be same as or later than ending time!";
-            }
-            else
-            {
-                message = string.Empty;
-            }
-        }
-        else
-        {
-            message = "Invalid End Time!";
-        }
-    }
-
-
 
     private async Task HandlValidSubmit()
     {
@@ -196,7 +159,7 @@
         }
         else
         {
-            conflictMessage = "Error adding scheduled class.";
+            conflictMessage = "Error adding scheduled class. Timeslot already taken";
         }
     }
 

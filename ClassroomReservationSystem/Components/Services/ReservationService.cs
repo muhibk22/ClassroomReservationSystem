@@ -4,31 +4,31 @@ using System.Data;
 
 namespace ClassroomReservationSystem.Services
 {
-    public class ScheduledClassService
+    public class ReservationService
     {
         private readonly string _connectionString;
 
-        public ScheduledClassService(IConfiguration config)
+        public ReservationService(IConfiguration config)
         {
             _connectionString = config.GetConnectionString("DefaultConnection")!;
         }
 
-        public async Task<List<ScheduledClass>> GetAllScheduledClassesAsync()
+        public async Task<List<Reservation>> GetAllReservationsAsync()
         {
-            List<ScheduledClass> classes = new();
+            List<Reservation> reservations = new();
 
             using SqlConnection conn = new(_connectionString);
             string query = @"
-                SELECT sc.ScheduledClassId, sc.ClassroomId, sc.Day, sc.StartTime, sc.EndTime,
-                       sc.AssignedCourseId, ac.InstructorId, ac.CourseId,
+                SELECT r.ReservationId, r.Date, r.StartTime, r.EndTime,
+                       r.AssignedCourseId, ac.InstructorId, ac.CourseId,
                        u.FullName, u.UserName, u.Role,
                        c.CourseCode, c.Title, c.PreReqCode,
-                       cr.RoomNumber, cr.Capacity, cr.Department
-                FROM ScheduledClasses sc
-                JOIN AssignedCourses ac ON sc.AssignedCourseId = ac.AssignedCourseId
+                       cr.ClassroomId, cr.RoomNumber, cr.Capacity, cr.Department
+                FROM Reservations r
+                JOIN AssignedCourses ac ON r.AssignedCourseId = ac.AssignedCourseId
                 JOIN Users u ON ac.InstructorId = u.UserId
                 JOIN Courses c ON ac.CourseId = c.CourseId
-                JOIN Classrooms cr ON sc.ClassroomId = cr.ClassroomId";
+                JOIN Classrooms cr ON r.ClassroomId = cr.ClassroomId";
 
             using SqlCommand cmd = new(query, conn);
             await conn.OpenAsync();
@@ -36,10 +36,10 @@ namespace ClassroomReservationSystem.Services
 
             while (await reader.ReadAsync())
             {
-                ScheduledClass scheduledClass = new()
+                Reservation reservation = new()
                 {
-                    ReservationId = reader.GetInt32(reader.GetOrdinal("ScheduledClassId")),
-                    Day = (DayOfWeek)reader.GetInt32(reader.GetOrdinal("Day")),
+                    ReservationId = reader.GetInt32(reader.GetOrdinal("ReservationId")),
+                    Date = reader.GetDateTime(reader.GetOrdinal("Date")),
                     StartTime = reader.GetTimeSpan(reader.GetOrdinal("StartTime")),
                     EndTime = reader.GetTimeSpan(reader.GetOrdinal("EndTime")),
                     Classroom = new Classroom
@@ -73,62 +73,62 @@ namespace ClassroomReservationSystem.Services
                     }
                 };
 
-                classes.Add(scheduledClass);
+                reservations.Add(reservation);
             }
 
-            return classes;
+            return reservations;
         }
 
-        public async Task<bool> AddScheduledClassAsync(ScheduledClass sc)
+        public async Task<bool> AddReservationAsync(Reservation reservation)
         {
-            bool exists = await ScheduledClassExistsAsync(sc.Classroom.ClassroomId, sc.Day, sc.StartTime, sc.EndTime);
+            bool exists = await ReservationExistsAsync(reservation.Classroom.ClassroomId, reservation.Date, reservation.StartTime, reservation.EndTime);
             if (exists)
             {
-                return false; // Conflict detected — do not insert
+                return false;
             }
 
             using SqlConnection conn = new(_connectionString);
             string query = @"
-                INSERT INTO ScheduledClasses (AssignedCourseId, ClassroomId, Day, StartTime, EndTime)
-                VALUES (@assignedCourseId, @classroomId, @day, @startTime, @endTime)";
+                INSERT INTO Reservations (AssignedCourseId, ClassroomId, Date, StartTime, EndTime)
+                VALUES (@assignedCourseId, @classroomId, @date, @startTime, @endTime)";
 
             using SqlCommand cmd = new(query, conn);
-            cmd.Parameters.AddWithValue("@assignedCourseId", sc.Course!.AssignedCourseId);
-            cmd.Parameters.AddWithValue("@classroomId", sc.Classroom.ClassroomId);
-            cmd.Parameters.AddWithValue("@day", (int)sc.Day);
-            cmd.Parameters.AddWithValue("@startTime", sc.StartTime);
-            cmd.Parameters.AddWithValue("@endTime", sc.EndTime);
+            cmd.Parameters.AddWithValue("@assignedCourseId", reservation.Course.AssignedCourseId);
+            cmd.Parameters.AddWithValue("@classroomId", reservation.Classroom.ClassroomId);
+            cmd.Parameters.AddWithValue("@date", reservation.Date);
+            cmd.Parameters.AddWithValue("@startTime", reservation.StartTime);
+            cmd.Parameters.AddWithValue("@endTime", reservation.EndTime);
 
             await conn.OpenAsync();
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
 
-        public async Task<bool> DeleteScheduledClassAsync(int scheduledClassId)
+        public async Task<bool> DeleteReservationAsync(int reservationId)
         {
             using SqlConnection conn = new(_connectionString);
-            string query = "DELETE FROM ScheduledClasses WHERE ScheduledClassId = @id";
+            string query = "DELETE FROM Reservations WHERE ReservationId = @id";
 
             using SqlCommand cmd = new(query, conn);
-            cmd.Parameters.AddWithValue("@id", scheduledClassId);
+            cmd.Parameters.AddWithValue("@id", reservationId);
 
             await conn.OpenAsync();
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
 
-        public async Task<bool> ScheduledClassExistsAsync(int classroomId, DayOfWeek day, TimeSpan start, TimeSpan end)
+        public async Task<bool> ReservationExistsAsync(int classroomId, DateTime date, TimeSpan start, TimeSpan end)
         {
             using SqlConnection conn = new(_connectionString);
             string query = @"
                 SELECT COUNT(*)
-                FROM ScheduledClasses
-                WHERE ClassroomId = @classroomId AND Day = @day
+                FROM Reservations
+                WHERE ClassroomId = @classroomId AND Date = @date
                       AND StartTime = @startTime AND EndTime = @endTime";
 
             using SqlCommand cmd = new(query, conn);
             cmd.Parameters.AddWithValue("@classroomId", classroomId);
-            cmd.Parameters.AddWithValue("@day", (int)day);
+            cmd.Parameters.AddWithValue("@date", date);
             cmd.Parameters.AddWithValue("@startTime", start);
             cmd.Parameters.AddWithValue("@endTime", end);
 
@@ -136,7 +136,5 @@ namespace ClassroomReservationSystem.Services
             int count = (int)await cmd.ExecuteScalarAsync();
             return count > 0;
         }
-
-
     }
 }

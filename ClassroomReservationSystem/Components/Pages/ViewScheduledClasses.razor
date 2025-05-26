@@ -1,1 +1,105 @@
-﻿
+﻿@page "/scheduled-classes"
+@using ClassroomReservationSystem.Components.Services;
+@using ClassroomReservationSystem.Components.Models;
+@using System.ComponentModel.DataAnnotations;
+@using ClassroomReservationSystem.Services
+
+@inject AssignedCourseService AssignedCourseService
+@inject UserService UserService
+@inject CourseService CourseService
+@inject ScheduledClassService ScheduledClassService
+@inject NavigationManager NavigationManager
+@inject ClassroomService ClassroomService
+@rendermode InteractiveServer
+<h2 class="title">Scheduled Classes</h2>
+
+@if (scheduledClasses == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="schedule-table overflow-x-auto">
+        @foreach (var roomGroup in scheduledClasses.GroupBy(sc => sc.Classroom.RoomNumber))
+        {
+            <h4 class="mt-4 text-lg font-semibold">Room: @roomGroup.Key</h4>
+            <table class="table-auto border-collapse w-full mb-6">
+                <thead>
+                    <tr>
+                        <th class="border p-2">Time</th>
+                        @foreach (var day in Enum.GetValues(typeof(DayOfWeek)))
+
+                        {
+                            <th class="border p-2">@day</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var time in TimeSlots)
+                    {
+                        <tr>
+                            <td class="border p-2 font-medium">@time.ToString(@"hh\:mm")</td>
+                            @foreach (DayOfWeek day in Enum.GetValues(typeof(DayOfWeek)))
+                            {
+                                <td class="border p-2 align-top">
+                                    @foreach (var sc in roomGroup
+                                                        .Where(sc => (int)sc.Day == (int)day && sc.StartTime == time))
+                                    {
+                                        <div class="class-box" @onclick="() => ToggleDelete(sc.ReservationId)">
+                                            <strong>@sc.Course.Course.CourseCode</strong><br />
+                                            @sc.Course.Course.Title<br />
+                                            @sc.Course.Instructor.FullName<br />
+                                            @sc.StartTime.ToString(@"hh\:mm") - @sc.EndTime.ToString(@"hh\:mm")
+
+                                            @if (selectedToDelete == sc.ReservationId)
+                                            {
+                                                <button class="delete-button" @onclick="() => DeleteClass(sc.ReservationId)">Delete</button>
+                                            }
+                                        </div>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}
+
+
+@code {
+    private List<TimeSpan> TimeSlots = new()
+{
+    new TimeSpan(8, 0, 0),
+    new TimeSpan(9, 20, 0),
+    new TimeSpan(10, 40, 0),
+    new TimeSpan(12, 0, 0),
+    new TimeSpan(13, 20, 0),
+    new TimeSpan(14, 40, 0),
+};
+
+    private List<ScheduledClass>? scheduledClasses;
+    private int? selectedToDelete = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        scheduledClasses = await ScheduledClassService.GetAllScheduledClassesAsync();
+    }
+
+    private void ToggleDelete(int id)
+    {
+        selectedToDelete = selectedToDelete == id ? null : id;
+    }
+
+    private async Task DeleteClass(int id)
+    {
+        var success = await ScheduledClassService.DeleteScheduledClassAsync(id);
+        if (success)
+        {
+            scheduledClasses = scheduledClasses!.Where(sc => sc.ReservationId != id).ToList();
+            selectedToDelete = null;
+            StateHasChanged();
+        }
+    }
+}
