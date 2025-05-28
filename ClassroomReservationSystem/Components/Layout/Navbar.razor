@@ -1,0 +1,61 @@
+﻿@using ClassroomReservationSystem.Components.Services;
+@inject UserState UserState
+@rendermode InteractiveServer
+
+@if (UserState.IsAdmin)
+{
+    <nav class="custom-navbar">
+        <div class="navbar-brand">Classroom Reservation System</div>
+
+        <div class="nav-item dropdown">
+            <span class="nav-link">Classes</span>
+            <div class="dropdown-menu">
+                <a href="/classrooms">Add Classroom</a>
+                <a href="/ViewScheduledClasses">View Scheduled Classes</a>
+            </div>
+        </div>
+
+        <div class="nav-item dropdown">
+            <span class="nav-link">Faculty</span>
+            <div class="dropdown-menu">
+                <a href="/RegisterFaculty">Register Faculty</a>
+            </div>
+        </div>
+
+        <div class="nav-item dropdown">
+            <span class="nav-link">Courses</span>
+            <div class="dropdown-menu">
+                <a href="/RegisterCourse">Register Course</a>
+                <a href="/CourseList">Course List</a>
+            </div>
+        </div>
+
+        <div class="nav-item dropdown">
+            <span class="nav-link">Lectures</span>
+            <div class="dropdown-menu">
+                <a href="/AddScheduledClass">Add Scheduled Class</a>
+                <a href="/AssignedCourseList">Assigned Courses</a>
+            </div>
+        </div>
+
+        <div class="nav-item dropdown">
+            <span class="nav-link">Scheduling</span>
+            <div class="dropdown-menu">
+                <a href="/AssignCourse">Assign Course</a>
+                <a href="/Reservations">Reservations</a>
+            </div>
+        </div>
+    </nav>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        UserState.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        UserState.OnChange -= StateHasChanged;
+    }
+}

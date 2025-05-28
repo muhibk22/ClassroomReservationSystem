@@ -47,15 +47,16 @@
             UserState.SetUser(user);
             if (UserState.IsAdmin)
             {
-                Navigation.NavigateTo("/register-faculty");
                 message = $"Welcome, {user.FullName}!";
-                
+                Navigation.NavigateTo("/register-faculty");
+
             }
-            // else
-            // {
-            //     message = " in progress";
-            // }
-            Console.WriteLine(UserState.CurrentUser.FullName);
+            else
+            {
+                message = $"Welcome, {user.FullName}!";
+                Navigation.NavigateTo("/scheduled-classes");
+            }
+            Console.WriteLine(UserState.CurrentUser!.FullName);
     
            
 

@@ -11,6 +11,7 @@ builder.Services.AddScoped<CourseService>();
 builder.Services.AddScoped<AssignedCourseService>();
 builder.Services.AddScoped<ClassroomService>();
 builder.Services.AddScoped<ScheduledClassService>();
+builder.Services.AddScoped<ReservationService>();
 
 
 builder.Services.AddRazorComponents()

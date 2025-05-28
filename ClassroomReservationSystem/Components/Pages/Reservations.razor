@@ -1,5 +1,154 @@
-﻿<h3>Reservations</h3>
+﻿@page "/reserve-room"
+@using ClassroomReservationSystem.Components.Models
+@using ClassroomReservationSystem.Components.Services
+@using ClassroomReservationSystem.Services
+@using System.ComponentModel.DataAnnotations
+@inject AssignedCourseService AssignedCourseService
+@inject ClassroomService ClassroomService
+@inject ReservationService ReservationService
+@inject UserState UserState
+@rendermode InteractiveServer
+
+<h3 class="text-xl font-semibold mb-4">Reserve a Room</h3>
+
+<EditForm Model="@reservation" OnValidSubmit="HandleValidSubmit" FormName="reserve-room">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Assigned Course</label>
+        <select class="form-select w-full" @bind="selectedCourseId">
+            <option value="">-- Select a Course --</option>
+            @foreach (var course in assignedCourses)
+            {
+                <option value="@course.AssignedCourseId">
+                    @course.Course.CourseCode - @course.Course.Title (@course.Instructor.FullName)
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Classroom</label>
+        <select class="form-select w-full" @onchange="OnClassroomChanged">
+            <option value="">-- Select a Classroom --</option>
+            @foreach (var room in classrooms)
+            {
+                <option value="@room.ClassroomId">@room.RoomNumber (@room.Department)</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Date</label>
+        <InputDate class="form-control" @bind-value="reservation.Date" TValue="DateTime" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Start Time:</label>
+        <select class="form-select" @bind="reservation.StartTime">
+            @foreach (var time in TimeOptions)
+            {
+                if (time < new TimeSpan(16, 0, 0))
+                {
+                    <option value="@time">@time.ToString(@"hh\:mm")</option>
+                }
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">End Time:</label>
+        <select class="form-select" @bind="reservation.EndTime">
+            @foreach (var time in TimeOptions)
+            {
+                if (time > new TimeSpan(8, 0, 0))
+                {
+                    <option value="@time">@time.ToString(@"hh\:mm")</option>
+                }
+            }
+        </select>
+    </div>
+
+    @if (!string.IsNullOrEmpty(conflictMessage))
+    {
+        <div class="text-danger">@conflictMessage</div>
+    }
+
+    <button type="submit" class="btn btn-primary" >Submit</button>
+</EditForm>
+
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert alert-info mt-3">@message</div>
+}
 
 @code {
+    private Reservation reservation = new()
+    {
+        Course = new AssignedCourse(),
+        Classroom = new Classroom(),
+        Date = DateTime.Today
+    };
+
+    private List<Classroom> classrooms = new();
+    private List<AssignedCourse> assignedCourses = new();
+    private int selectedCourseId;
+    private int selectedClassroomId;
+    private string conflictMessage = string.Empty;
+    private string message = string.Empty;
+
+    private List<TimeSpan> TimeOptions = new()
+    {
+        new TimeSpan(8, 0, 0),
+        new TimeSpan(9, 20, 0),
+        new TimeSpan(10, 40, 0),
+        new TimeSpan(12, 0, 0),
+        new TimeSpan(13, 20, 0),
+        new TimeSpan(14, 40, 0),
+        new TimeSpan(16, 0, 0)
+    };
+
+    private bool IsFormValid =>
+        selectedCourseId > 0 &&
+        selectedClassroomId > 0 ;
+
+    protected override async Task OnInitializedAsync()
+    {
+        assignedCourses = await AssignedCourseService.GetAllAssignedCoursesAsync();
+        classrooms = await ClassroomService.GetAllClassroomsAsync();
+    }
+
+    private void OnClassroomChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int id))
+        {
+            selectedClassroomId = id;
+            reservation.Classroom = classrooms.First(c => c.ClassroomId == id);
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        reservation.Course.AssignedCourseId = selectedCourseId;
+
+        if (reservation.StartTime >= reservation.EndTime)
+        {
+            message = "Please select valid timings";
+            return;
+        }
+
+        int currentUserId = UserState.CurrentUser?.UserId ?? 0;
+
+        bool added = await ReservationService.AddReservationAsync(reservation, currentUserId);
+        if (added)
+        {
+            message = "Reservation successful!";
+        }
+        else
+        {
+            conflictMessage = "Error: Time slot already taken.";
+        }
+    }
 
 }

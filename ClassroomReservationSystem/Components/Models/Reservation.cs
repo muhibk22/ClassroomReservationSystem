@@ -5,7 +5,6 @@ namespace ClassroomReservationSystem.Components.Models
     public class Reservation : ReservationBase
     {
         public DateTime Date { get; set; }
-        public string Purpose { get; set; }
         public int ReservedByUserId { get; set; }
     }
 

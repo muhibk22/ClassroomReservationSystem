@@ -79,7 +79,7 @@ namespace ClassroomReservationSystem.Services
             return reservations;
         }
 
-        public async Task<bool> AddReservationAsync(Reservation reservation)
+        public async Task<bool> AddReservationAsync(Reservation reservation, int reservedByUserId)
         {
             bool exists = await ReservationExistsAsync(reservation.Classroom.ClassroomId, reservation.Date, reservation.StartTime, reservation.EndTime);
             if (exists)
@@ -89,8 +89,8 @@ namespace ClassroomReservationSystem.Services
 
             using SqlConnection conn = new(_connectionString);
             string query = @"
-                INSERT INTO Reservations (AssignedCourseId, ClassroomId, Date, StartTime, EndTime)
-                VALUES (@assignedCourseId, @classroomId, @date, @startTime, @endTime)";
+        INSERT INTO Reservations (AssignedCourseId, ClassroomId, Date, StartTime, EndTime, ReservedByUserId)
+        VALUES (@assignedCourseId, @classroomId, @date, @startTime, @endTime, @reservedByUserId)";
 
             using SqlCommand cmd = new(query, conn);
             cmd.Parameters.AddWithValue("@assignedCourseId", reservation.Course.AssignedCourseId);
@@ -98,11 +98,13 @@ namespace ClassroomReservationSystem.Services
             cmd.Parameters.AddWithValue("@date", reservation.Date);
             cmd.Parameters.AddWithValue("@startTime", reservation.StartTime);
             cmd.Parameters.AddWithValue("@endTime", reservation.EndTime);
+            cmd.Parameters.AddWithValue("@reservedByUserId", reservedByUserId);
 
             await conn.OpenAsync();
             int rows = await cmd.ExecuteNonQueryAsync();
             return rows > 0;
         }
+
 
         public async Task<bool> DeleteReservationAsync(int reservationId)
         {
