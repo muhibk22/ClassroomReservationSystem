@@ -1,5 +1,5 @@
 ﻿.custom-navbar {
-    background-color: #333;
+    background-color: #4195C1;
     color: white;
     padding: 0.75rem;
     display: flex;
@@ -27,32 +27,32 @@
     text-decoration: none;
 }
 
-    .nav-link:hover {
-        background-color: #444;
-    }
+.nav-link:hover {
+    background-color: #0f3341;
+ }
 
 .dropdown-menu {
     display: none;
     position: absolute;
     top: 2.5rem;
     left: 0;
-    background-color: #444;
+    background-color: #4195b1;
     border: 1px solid #222;
     min-width: 180px;
     z-index: 10;
     flex-direction: column;
 }
 
-    .dropdown-menu a {
-        padding: 0.5rem 1rem;
-        color: white;
-        text-decoration: none;
-        display: block;
-    }
+.dropdown-menu a {
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    display: block;
+}
 
-        .dropdown-menu a:hover {
-            background-color: #555;
-        }
+.dropdown-menu a:hover {
+    background-color: #0f3341;
+}
 
 .nav-item:hover .dropdown-menu {
     display: flex;
@@ -62,6 +62,8 @@
     margin-right:90px;
 }
 
-.logout-button{
-    background-color:#333;
+.logout-button {
+    background-color: #4195C1;
+    border:1px solid white;
+    border-radius:10px;
 }
