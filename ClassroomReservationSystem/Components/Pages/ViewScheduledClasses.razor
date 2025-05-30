@@ -54,7 +54,7 @@ else
                                             @sc.Course.Instructor.FullName<br />
                                             @sc.StartTime.ToString(@"hh\:mm") - @sc.EndTime.ToString(@"hh\:mm")
 
-                                            @if (selectedToDelete == sc.ReservationId)
+                                            @if (selectedToDelete == sc.ReservationId && UserState.IsAdmin)
                                             {
                                                 <button class="delete-button" @onclick="() => DeleteClass(sc.ReservationId)">Delete</button>
                                             }
