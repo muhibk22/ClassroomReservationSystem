@@ -14,28 +14,42 @@
 }
 else
 {
-    <h2 class="text-xl font-bold mb-4">Classroom Management</h2>
+    <div class="container mt-5 outline">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="mb-4 text-center">Add Classroom Record</h2>
 
-    <EditForm Model="newClassroom" OnValidSubmit="AddClassroomAsync" formname="add-classroom-form">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+                <EditForm Model="newClassroom" OnValidSubmit="AddClassroomAsync" formname="add-classroom-form">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger" />
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <InputText @bind-Value="newClassroom.RoomNumber" class="input" placeholder="Room Number" />
-            <InputNumber @bind-Value="newClassroom.Capacity" class="input" placeholder="Capacity" />
-            <InputText @bind-Value="newClassroom.Department" class="input" placeholder="Department" />
+                    <div class="mb-4">
+                        <label class="form-label">Room Number</label>
+                        <InputText @bind-Value="newClassroom.RoomNumber" class="form-control" placeholder="Room Number" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Capacity</label>
+                        <InputNumber @bind-Value="newClassroom.Capacity" class="form-control" placeholder="Capacity" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Department</label>
+                        <InputText @bind-Value="newClassroom.Department" class="form-control" placeholder="Department" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Add Classroom</button>
+                </EditForm>
+
+                @if (!string.IsNullOrWhiteSpace(statusMessage))
+                {
+                    <div class="alert alert-info mt-3" role="alert">
+                        @statusMessage
+                    </div>
+                }
+            </div>
         </div>
-
-        <button type="submit" class="btn btn-primary">Add Classroom</button>
-    </EditForm>
-
-    @if (!string.IsNullOrWhiteSpace(statusMessage))
-    {
-        <div class="mt-2 text-sm text-blue-700 bg-blue-100 border border-blue-300 px-3 py-2 rounded">
-            @statusMessage
-        </div>
-    }
-
+    </div>
 }
 
 @code {

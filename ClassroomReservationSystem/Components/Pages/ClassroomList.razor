@@ -13,49 +13,68 @@
 }
 else
 {
-    @if (classrooms is null)
-    {
-        <p>Loading...</p>
-    }
-    else if (classrooms.Count == 0)
-    {
-        <p>No classrooms found.</p>
-    }
-    else
-    {
-        <table class="table-auto w-full mt-6 border">
-            <thead class="bg-gray-200">
-                <tr>
-                    <th class="px-4 py-2">Room Number</th>
-                    <th class="px-4 py-2">Capacity</th>
-                    <th class="px-4 py-2">Department</th>
-                    <th class="px-4 py-2">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var room in classrooms)
-                {
-                    <tr>
-                        <td class="border px-4 py-2">@room.RoomNumber</td>
-                        <td class="border px-4 py-2">@room.Capacity</td>
-                        <td class="border px-4 py-2">@room.Department</td>
-                        <td class="border px-4 py-2">
-                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(room)">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    <div class="container mt-5 limited">
+        <div class="inside">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
 
-    @if (deleteTarget != null)
-    {
-        <div class="mt-4 bg-red-50 border border-red-300 p-4 rounded">
-            <p>Are you sure you want to delete <strong>@deleteTarget.RoomNumber</strong>?</p>
-            <button class="btn btn-danger mr-2" @onclick="DeleteConfirmed">Yes, Delete</button>
-            <button class="btn btn-secondary" @onclick="() => deleteTarget = null">Cancel</button>
+                <h2 class="text-center mb-4">Classroom List</h2>
+
+                @if (classrooms is null)
+                {
+                    <p class="text-center">Loading...</p>
+                }
+                else if (classrooms.Count == 0)
+                {
+                    <p class="text-center">No classrooms found.</p>
+                }
+                else
+                {
+                    <table class="table  table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Room Number</th>
+                                <th>Capacity</th>
+                                <th>Department</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var room in classrooms)
+                            {
+                                <tr>
+                                    <td>@room.RoomNumber</td>
+                                    <td>@room.Capacity</td>
+                                    <td>@room.Department</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" @onclick="() => ConfirmDelete(room)">Delete</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                @if (deleteTarget != null)
+                {
+                    <div class="alert alert-warning mt-4">
+                        <p>Are you sure you want to delete <strong>@deleteTarget.RoomNumber</strong>?</p>
+                        <button class="btn btn-danger me-2" @onclick="DeleteConfirmed">Yes, Delete</button>
+                        <button class="btn btn-secondary" @onclick="() => deleteTarget = null">Cancel</button>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(statusMessage))
+                {
+                    <div class="alert alert-info mt-3" role="alert">
+                        @statusMessage
+                    </div>
+                }
+
+            </div>
         </div>
-    }
+        </div>
+    </div>
 }
 
 

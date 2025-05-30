@@ -67,3 +67,7 @@
     border:1px solid white;
     border-radius:10px;
 }
+
+.outline{
+    border:1px solid black;
+}
