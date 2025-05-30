@@ -57,3 +57,7 @@
 .nav-item:hover .dropdown-menu {
     display: flex;
 }
+
+.nav-item:last-of-type{
+    margin-right:90px;
+}

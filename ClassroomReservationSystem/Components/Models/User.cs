@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
+[Serializable]
 public class User
 {
     public int UserId { get; set; }

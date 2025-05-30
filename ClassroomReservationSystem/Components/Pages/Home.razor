@@ -44,7 +44,7 @@
         var user = await UserService.AuthenticateAsync(loginModel.UserName, loginModel.Password);
         if (user != null)
         {
-            UserState.SetUser(user);
+            UserState.SetUserAsync(user);
             if (UserState.IsAdmin)
             {
                 message = $"Welcome, {user.FullName}!";
@@ -69,5 +69,20 @@
 
     }
 
+    private bool _initialized = false;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("Inside on after render");
+        if (firstRender && !_initialized)
+        {
+            Console.WriteLine("Initialized fun");
+            _initialized = true;
+            await UserState.InitializeAsync();
+            StateHasChanged(); 
+
+        }
+    }
     
 }

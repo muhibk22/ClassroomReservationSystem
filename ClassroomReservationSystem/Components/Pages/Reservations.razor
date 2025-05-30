@@ -9,78 +9,87 @@
 @inject UserState UserState
 @rendermode InteractiveServer
 
-<h3 class="text-xl font-semibold mb-4">Reserve a Room</h3>
-
-<EditForm Model="@reservation" OnValidSubmit="HandleValidSubmit" FormName="reserve-room">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="mb-3">
-        <label class="form-label">Assigned Course</label>
-        <select class="form-select w-full" @bind="selectedCourseId">
-            <option value="">-- Select a Course --</option>
-            @foreach (var course in assignedCourses)
-            {
-                <option value="@course.AssignedCourseId">
-                    @course.Course.CourseCode - @course.Course.Title (@course.Instructor.FullName)
-                </option>
-            }
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Classroom</label>
-        <select class="form-select w-full" @onchange="OnClassroomChanged">
-            <option value="">-- Select a Classroom --</option>
-            @foreach (var room in classrooms)
-            {
-                <option value="@room.ClassroomId">@room.RoomNumber (@room.Department)</option>
-            }
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Date</label>
-        <InputDate class="form-control" @bind-value="reservation.Date" TValue="DateTime" />
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Start Time:</label>
-        <select class="form-select" @bind="reservation.StartTime">
-            @foreach (var time in TimeOptions)
-            {
-                if (time < new TimeSpan(16, 0, 0))
-                {
-                    <option value="@time">@time.ToString(@"hh\:mm")</option>
-                }
-            }
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">End Time:</label>
-        <select class="form-select" @bind="reservation.EndTime">
-            @foreach (var time in TimeOptions)
-            {
-                if (time > new TimeSpan(8, 0, 0))
-                {
-                    <option value="@time">@time.ToString(@"hh\:mm")</option>
-                }
-            }
-        </select>
-    </div>
-
-    @if (!string.IsNullOrEmpty(conflictMessage))
-    {
-        <div class="text-danger">@conflictMessage</div>
-    }
-
-    <button type="submit" class="btn btn-primary" >Submit</button>
-</EditForm>
-
-@if (!string.IsNullOrWhiteSpace(message))
+@if (!UserState.IsAdmin)
 {
-    <div class="alert alert-info mt-3">@message</div>
+    <div class="text-danger bg-red-100 border border-red-300 p-3 rounded">
+        Access Denied: Only administrators can reserve rooms.
+    </div>
+}
+else
+{
+    <h3 class="text-xl font-semibold mb-4">Reserve a Room</h3>
+
+    <EditForm Model="@reservation" OnValidSubmit="HandleValidSubmit" FormName="reserve-room">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Assigned Course</label>
+            <select class="form-select w-full" @bind="selectedCourseId">
+                <option value="">-- Select a Course --</option>
+                @foreach (var course in assignedCourses)
+                {
+                    <option value="@course.AssignedCourseId">
+                        @course.Course.CourseCode - @course.Course.Title (@course.Instructor.FullName)
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Classroom</label>
+            <select class="form-select w-full" @onchange="OnClassroomChanged">
+                <option value="">-- Select a Classroom --</option>
+                @foreach (var room in classrooms)
+                {
+                    <option value="@room.ClassroomId">@room.RoomNumber (@room.Department)</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Date</label>
+            <InputDate class="form-control" @bind-value="reservation.Date" TValue="DateTime" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Start Time:</label>
+            <select class="form-select" @bind="reservation.StartTime">
+                @foreach (var time in TimeOptions)
+                {
+                    if (time < new TimeSpan(16, 0, 0))
+                    {
+                        <option value="@time">@time.ToString(@"hh\:mm")</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">End Time:</label>
+            <select class="form-select" @bind="reservation.EndTime">
+                @foreach (var time in TimeOptions)
+                {
+                    if (time > new TimeSpan(8, 0, 0))
+                    {
+                        <option value="@time">@time.ToString(@"hh\:mm")</option>
+                    }
+                }
+            </select>
+        </div>
+
+        @if (!string.IsNullOrEmpty(conflictMessage))
+        {
+            <div class="text-danger">@conflictMessage</div>
+        }
+
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </EditForm>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-info mt-3">@message</div>
+    }
 }
 
 @code {
@@ -111,12 +120,12 @@
 
     private bool IsFormValid =>
         selectedCourseId > 0 &&
-        selectedClassroomId > 0 ;
+        selectedClassroomId > 0;
 
     protected override async Task OnInitializedAsync()
     {
-        assignedCourses = await AssignedCourseService.GetAllAssignedCoursesAsync();
-        classrooms = await ClassroomService.GetAllClassroomsAsync();
+            assignedCourses = await AssignedCourseService.GetAllAssignedCoursesAsync();
+            classrooms = await ClassroomService.GetAllClassroomsAsync();
     }
 
     private void OnClassroomChanged(ChangeEventArgs e)
@@ -151,4 +160,16 @@
         }
     }
 
+    private bool _initialized = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("Inside on after render");
+        if (firstRender && !_initialized)
+        {
+            Console.WriteLine("Initialized fun");
+            _initialized = true;
+            await UserState.InitializeAsync();
+            StateHasChanged();
+        }
+    }
 }

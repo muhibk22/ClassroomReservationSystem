@@ -3,73 +3,82 @@
 @using ClassroomReservationSystem.Components.Models;
 @using System.ComponentModel.DataAnnotations;
 @inject ClassroomService ClassroomService
+@inject UserState UserState
 @rendermode InteractiveServer
 
-
-<h2 class="text-xl font-bold mb-4">Classroom Management</h2>
-
-<EditForm Model="newClassroom" OnValidSubmit="AddClassroomAsync" formname="add-classroom-form">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <InputText @bind-Value="newClassroom.RoomNumber" class="input" placeholder="Room Number" />
-        <InputNumber @bind-Value="newClassroom.Capacity" class="input" placeholder="Capacity" />
-        <InputText @bind-Value="newClassroom.Department" class="input" placeholder="Department" />
+@if (!UserState.IsAdmin)
+{
+    <div class="text-red-600 font-semibold p-4 bg-red-50 border border-red-300 rounded">
+        Access Denied: You do not have permission to view this page.
     </div>
-
-    <button type="submit" class="btn btn-primary">Add Classroom</button>
-</EditForm>
-
-@if (!string.IsNullOrWhiteSpace(statusMessage))
-{
-    <div class="mt-2 text-sm text-blue-700 bg-blue-100 border border-blue-300 px-3 py-2 rounded">
-        @statusMessage
-    </div>
-}
-
-@if (classrooms is null)
-{
-    <p>Loading...</p>
-}
-else if (classrooms.Count == 0)
-{
-    <p>No classrooms found.</p>
 }
 else
 {
-    <table class="table-auto w-full mt-6 border">
-        <thead class="bg-gray-200">
-            <tr>
-                <th class="px-4 py-2">Room Number</th>
-                <th class="px-4 py-2">Capacity</th>
-                <th class="px-4 py-2">Department</th>
-                <th class="px-4 py-2">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var room in classrooms)
-            {
-                <tr>
-                    <td class="border px-4 py-2">@room.RoomNumber</td>
-                    <td class="border px-4 py-2">@room.Capacity</td>
-                    <td class="border px-4 py-2">@room.Department</td>
-                    <td class="border px-4 py-2">
-                        <button class="btn btn-danger" @onclick="() => ConfirmDelete(room)">Delete</button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+    <h2 class="text-xl font-bold mb-4">Classroom Management</h2>
 
-@if (deleteTarget != null)
-{
-    <div class="mt-4 bg-red-50 border border-red-300 p-4 rounded">
-        <p>Are you sure you want to delete <strong>@deleteTarget.RoomNumber</strong>?</p>
-        <button class="btn btn-danger mr-2" @onclick="DeleteConfirmed">Yes, Delete</button>
-        <button class="btn btn-secondary" @onclick="() => deleteTarget = null">Cancel</button>
-    </div>
+    <EditForm Model="newClassroom" OnValidSubmit="AddClassroomAsync" formname="add-classroom-form">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <InputText @bind-Value="newClassroom.RoomNumber" class="input" placeholder="Room Number" />
+            <InputNumber @bind-Value="newClassroom.Capacity" class="input" placeholder="Capacity" />
+            <InputText @bind-Value="newClassroom.Department" class="input" placeholder="Department" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Classroom</button>
+    </EditForm>
+
+    @if (!string.IsNullOrWhiteSpace(statusMessage))
+    {
+        <div class="mt-2 text-sm text-blue-700 bg-blue-100 border border-blue-300 px-3 py-2 rounded">
+            @statusMessage
+        </div>
+    }
+
+    @if (classrooms is null)
+    {
+        <p>Loading...</p>
+    }
+    else if (classrooms.Count == 0)
+    {
+        <p>No classrooms found.</p>
+    }
+    else
+    {
+        <table class="table-auto w-full mt-6 border">
+            <thead class="bg-gray-200">
+                <tr>
+                    <th class="px-4 py-2">Room Number</th>
+                    <th class="px-4 py-2">Capacity</th>
+                    <th class="px-4 py-2">Department</th>
+                    <th class="px-4 py-2">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var room in classrooms)
+                {
+                    <tr>
+                        <td class="border px-4 py-2">@room.RoomNumber</td>
+                        <td class="border px-4 py-2">@room.Capacity</td>
+                        <td class="border px-4 py-2">@room.Department</td>
+                        <td class="border px-4 py-2">
+                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(room)">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (deleteTarget != null)
+    {
+        <div class="mt-4 bg-red-50 border border-red-300 p-4 rounded">
+            <p>Are you sure you want to delete <strong>@deleteTarget.RoomNumber</strong>?</p>
+            <button class="btn btn-danger mr-2" @onclick="DeleteConfirmed">Yes, Delete</button>
+            <button class="btn btn-secondary" @onclick="() => deleteTarget = null">Cancel</button>
+        </div>
+    }
 }
 
 @code {
@@ -80,7 +89,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadClassroomsAsync();
+        
+            await LoadClassroomsAsync();
+        
     }
 
     private async Task LoadClassroomsAsync()
@@ -133,4 +144,18 @@ else
             }
         }
     }
+    private bool _initialized = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("Inside on after render");
+        if (firstRender && !_initialized)
+        {
+            Console.WriteLine("Initialized fun");
+            _initialized = true;
+            await UserState.InitializeAsync();
+            StateHasChanged();
+
+        }
+    }
+
 }

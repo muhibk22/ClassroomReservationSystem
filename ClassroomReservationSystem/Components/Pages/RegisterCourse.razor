@@ -72,4 +72,17 @@ else
             message = "Failed to register course.";
         }
     }
+
+    private bool _initialized = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine("Inside on after render");
+        if (firstRender && !_initialized)
+        {
+            Console.WriteLine("Initialized fun");
+            _initialized = true;
+            await UserState.InitializeAsync();
+            StateHasChanged();
+        }
+    }
 }
