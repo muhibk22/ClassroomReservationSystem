@@ -41,15 +41,16 @@ else
                 </EditForm>
             </div>
         </div>
+        @if (!string.IsNullOrEmpty(message))
+        {
+            <div class="mt-3 alert @(isSuccess ? "alert-success" : "alert-danger")">
+                @message
+            </div>
+        }
     </div>
 
 
-@if (!string.IsNullOrEmpty(message))
-{
-    <div class="mt-3 alert @(isSuccess ? "alert-success" : "alert-danger")">
-        @message
-    </div>
-}
+
 }
 
 
