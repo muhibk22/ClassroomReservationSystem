@@ -6,7 +6,7 @@
 @inject UserState UserState
 @rendermode InteractiveServer
 
-<h3>All Courses</h3>
+
 
 @if (!UserState.IsAdmin)
 {
@@ -22,7 +22,14 @@ else if (courses.Count == 0)
 }
 else
 {
-    <table class="table table-bordered table-striped">
+
+     <div class="container mt-5 limited">
+        <div class="inside">
+        <div class="row justify-content-center">
+                 <h2 class="text-center mb-4">All Courses</h2>
+            <div class="col-md-10">
+    <table class="table table-bordered">
+
         <thead>
             <tr>
                 <th>Course Code</th>
@@ -47,6 +54,10 @@ else
             }
         </tbody>
     </table>
+    </div>
+    </div>
+    </div>
+    </div>
 }
 
 @if (showConfirm)
