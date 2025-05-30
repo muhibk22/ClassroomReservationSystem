@@ -30,11 +30,16 @@ th, td {
     position: relative;
     cursor: pointer;
     transition: background-color 0.3s;
+    display:flex;
+    flex-direction:column;
 }
 
-    .class-box:hover {
-        background-color: #e6f2ff;
-    }
+.margin-adjust{
+    margin-bottom:0;
+}
+.class-box:hover {
+    background-color: #4195C1;
+}
 
 .delete-button {
     background-color: #ff4d4d;
@@ -45,4 +50,8 @@ th, td {
     margin-top: 5px;
     cursor: pointer;
     font-size: 0.8rem;
+}
+
+.container{
+    min-width:90dvw;
 }
