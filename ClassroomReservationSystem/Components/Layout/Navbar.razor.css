@@ -61,3 +61,7 @@
 .nav-item:last-of-type{
     margin-right:90px;
 }
+
+.logout-button{
+    background-color:#333;
+}

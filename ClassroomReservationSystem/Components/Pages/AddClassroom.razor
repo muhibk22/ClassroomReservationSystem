@@ -1,4 +1,4 @@
-﻿@page "/classrooms"
+﻿@page "/add-classroom"
 @using ClassroomReservationSystem.Components.Services;
 @using ClassroomReservationSystem.Components.Models;
 @using System.ComponentModel.DataAnnotations;
@@ -36,55 +36,12 @@ else
         </div>
     }
 
-    @if (classrooms is null)
-    {
-        <p>Loading...</p>
-    }
-    else if (classrooms.Count == 0)
-    {
-        <p>No classrooms found.</p>
-    }
-    else
-    {
-        <table class="table-auto w-full mt-6 border">
-            <thead class="bg-gray-200">
-                <tr>
-                    <th class="px-4 py-2">Room Number</th>
-                    <th class="px-4 py-2">Capacity</th>
-                    <th class="px-4 py-2">Department</th>
-                    <th class="px-4 py-2">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var room in classrooms)
-                {
-                    <tr>
-                        <td class="border px-4 py-2">@room.RoomNumber</td>
-                        <td class="border px-4 py-2">@room.Capacity</td>
-                        <td class="border px-4 py-2">@room.Department</td>
-                        <td class="border px-4 py-2">
-                            <button class="btn btn-danger" @onclick="() => ConfirmDelete(room)">Delete</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-
-    @if (deleteTarget != null)
-    {
-        <div class="mt-4 bg-red-50 border border-red-300 p-4 rounded">
-            <p>Are you sure you want to delete <strong>@deleteTarget.RoomNumber</strong>?</p>
-            <button class="btn btn-danger mr-2" @onclick="DeleteConfirmed">Yes, Delete</button>
-            <button class="btn btn-secondary" @onclick="() => deleteTarget = null">Cancel</button>
-        </div>
-    }
 }
 
 @code {
     private List<Classroom>? classrooms;
     private Classroom newClassroom = new();
-    private Classroom? deleteTarget;
+
     private string? statusMessage;
 
     protected override async Task OnInitializedAsync()
@@ -122,28 +79,7 @@ else
         }
     }
 
-    private void ConfirmDelete(Classroom classroom)
-    {
-        deleteTarget = classroom;
-    }
-
-    private async Task DeleteConfirmed()
-    {
-        if (deleteTarget != null)
-        {
-            bool deleted = await ClassroomService.DeleteClassroomAsync(deleteTarget.ClassroomId);
-            if (deleted)
-            {
-                statusMessage = $"Classroom '{deleteTarget.RoomNumber}' deleted.";
-                deleteTarget = null;
-                await LoadClassroomsAsync();
-            }
-            else
-            {
-                statusMessage = "Failed to delete classroom.";
-            }
-        }
-    }
+  
     private bool _initialized = false;
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

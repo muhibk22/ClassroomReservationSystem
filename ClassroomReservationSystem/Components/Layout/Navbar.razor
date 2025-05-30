@@ -1,5 +1,6 @@
 ﻿@using ClassroomReservationSystem.Components.Services;
 @inject UserState UserState
+@inject NavigationManager Nav
 @rendermode InteractiveServer
 
 @if (UserState.IsAdmin)
@@ -10,8 +11,8 @@
         <div class="nav-item dropdown">
             <span class="nav-link">Classes</span>
             <div class="dropdown-menu">
-                <a href="/classrooms">Add Classroom</a>
-                
+                <a href="/add-classroom">Add Classroom</a>
+                <a href="/classrooms">View Classrooms</a>
             </div>
         </div>
 
@@ -45,6 +46,11 @@
                 <a href="/scheduled-classes">View Scheduled Classes</a>
             </div>
         </div>
+
+      
+        <div class="nav-item">
+            <button class="nav-link logout-button" @onclick="Logout">Logout</button>
+        </div>
     </nav>
 }
 
@@ -57,5 +63,12 @@
     public void Dispose()
     {
         UserState.OnChange -= StateHasChanged;
+    }
+
+    private async Task Logout()
+    {
+        await UserState.LogoutAsync();
+        Nav.NavigateTo("/");
+
     }
 }
