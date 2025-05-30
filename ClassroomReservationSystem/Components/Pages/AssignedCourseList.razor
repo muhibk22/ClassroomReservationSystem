@@ -6,7 +6,6 @@
 @inject UserState UserState
 @rendermode InteractiveServer
 
-<h3>All Assigned Courses</h3>
 
 @if (!UserState.IsAdmin)
 {
@@ -40,7 +39,13 @@ else
                         PreReqCode = reader.IsDBNull(8) ? null : reader.GetString(8)
                     }*@
     
-    <table class="table table-bordered table-striped">
+ <div class="container mt-5 limited">
+        <div class="inside">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+
+                <h2 class="text-center mb-4">Assigned Courses List</h2>
+    <table class="table table-bordered">
         <thead>
             <tr>
                 <th>ID</th>
@@ -66,6 +71,9 @@ else
             }
         </tbody>
     </table>
+    </div> </div> </div>
+   
+    </div>
 }
 
 @if (showConfirm)

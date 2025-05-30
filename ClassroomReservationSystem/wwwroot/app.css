@@ -90,11 +90,21 @@ h1:focus {
 }
 .container {
     max-width: 900px;
-    margin: 40px auto;
+    margin: 20px auto;
     padding: 30px;
     background-color: #ffffff;
     border: 1px solid #e0e0e0;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.image-banner-1 {
+    background-image: url('/Images/courses.jpg');
+    background-size: contain;
+    background-position: center;
+    background-repeat:no-repeat;
+    min-width: 70%;
+    height: 280px; /* Or any fixed height */
+    border-radius: 12px; /* Optional: rounded corners */
 }
