@@ -5,27 +5,37 @@
 @inject UserState UserState
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
-<h3>Login</h3>
+<div class="login-page">
+    <div class="container d-flex flex-column align-items-center justify-content-center">
+        <div class="w-100 text-center title">
+            <h2 class="mb-4 ">Classroom Reservation System</h2>
+        </div>
 
-<EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="login">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+        <div class="col-md-5 login-container">
+            <h3 class="text-center mb-4">Login</h3>
 
-    <div class="mb-2">
-        <label>Username:</label>
-        <InputText class="form-control" @bind-Value="loginModel.UserName" />
-        <ValidationMessage For="@(()=>loginModel.UserName)"/>
+            <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="login">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" />
+
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <InputText class="form-control" @bind-Value="loginModel.UserName" />
+                    <ValidationMessage For="@(() => loginModel.UserName)" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
+                    <ValidationMessage For="@(() => loginModel.Password)" class="text-danger" />
+                </div>
+
+                <button class="btn btn-primary w-100" type="submit">Login</button>
+            </EditForm>
+        </div>
     </div>
+</div>
 
-    <div class="mb-2">
-        <label>Password:</label>
-        <InputText class="form-control" @bind-Value="loginModel.Password" type="password" />
-        <ValidationMessage For="@(() => loginModel.Password)" />
-
-    </div>
-
-    <button class="btn btn-primary" type="submit">Login</button>
-</EditForm>
 
 @if (!string.IsNullOrEmpty(message))
 {
@@ -57,10 +67,10 @@
                 Navigation.NavigateTo("/scheduled-classes");
             }
             Console.WriteLine(UserState.CurrentUser!.FullName);
-    
-           
 
-            
+
+
+
         }
         else
         {
@@ -74,13 +84,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine("Inside on after render");
-        if (firstRender && !_initialized)
-        {
-            Console.WriteLine("Initialized fun");
-            _initialized = true;
-            await UserState.InitializeAsync();
-            StateHasChanged(); 
+    
+        if (firstRender && !_initialized){
+            UserState.LogoutAsync();
+            StateHasChanged();
 
         }
     }

@@ -12,6 +12,9 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
+:root {
+    --gradient: linear-gradient(270deg, blue,white,blue,white,blue);
+}
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
@@ -84,4 +87,14 @@ h1:focus {
 
 .btn-secondary:hover {
     background-color: #0F3341;
+}
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

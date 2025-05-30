@@ -6,36 +6,43 @@
 @inject UserState UserState
 @rendermode InteractiveServer
 
-<h3>Register New Faculty</h3>
-
 @if (!UserState.IsAdmin)
 {
     <p class="text-danger">Access Denied. Only admins can register new users.</p>
 }
 else
 {
-<EditForm Model="@facultyUser" OnValidSubmit="HandleRegister" formname="FacultyRegistrationForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h2 class="mb-4 text-center">Faculty Registration</h2>
 
-    <div class="mb-3">
-        <label>Full Name:</label>
-        <InputText class="form-control" @bind-Value="facultyUser.FullName" />
+                <EditForm Model="@facultyUser" OnValidSubmit="HandleRegister" formname="FacultyRegistrationForm">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="text-danger" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <InputText class="form-control" @bind-Value="facultyUser.FullName" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <InputText class="form-control" @bind-Value="facultyUser.UserName" />
+                        <ValidationMessage For="@(() => facultyUser.UserName)" class="text-danger" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <InputText class="form-control" @bind-Value="facultyUser.Password" type="password" />
+                    </div>
+
+                    <button class="btn btn-primary w-100" type="submit">Register Faculty</button>
+                </EditForm>
+            </div>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label>Username:</label>
-        <InputText class="form-control" @bind-Value="facultyUser.UserName" />
-        <ValidationMessage For="@(() => facultyUser.UserName)" />
-    </div>
-
-    <div class="mb-3">
-        <label>Password:</label>
-        <InputText class="form-control" @bind-Value="facultyUser.Password" type="password" />
-    </div>
-
-    <button class="btn btn-primary" type="submit">Register Faculty</button>
-</EditForm>
 
 @if (!string.IsNullOrEmpty(message))
 {
