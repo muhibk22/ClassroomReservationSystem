@@ -1,6 +1,6 @@
 # Classroom Reservation System
 
-A role-based classroom scheduling system built using **.NET Blazor** and **SQL Server**. Designed for academic institutions to manage courses, instructors, classrooms, and scheduled lectures — all while avoiding conflicts and maintaining a clear timetable.
+A role-based classroom scheduling system built using **.NET Blazor** and **SQL Server**. Designed for academic institutions to manage courses, instructors, classrooms, and scheduled lectures - all while avoiding conflicts and maintaining a clear timetable.
 
 ---
 
