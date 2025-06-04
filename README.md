@@ -34,6 +34,8 @@ A role-based classroom scheduling system built using **.NET Blazor** and **SQL S
 > Passwords are stored in plain text for academic purposes — hashing should be added for production use.
 > Make sure the database schema matches the class models used in the project for seamless integration. 
 
+---
+
 ## 📷 Screenshots
 ![image](https://github.com/user-attachments/assets/98ee2454-c1ae-49d4-a27a-438b5254abde)
 ![image](https://github.com/user-attachments/assets/34a22167-a53b-4188-9627-f2381a5b70b4)
